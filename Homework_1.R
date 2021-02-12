@@ -33,16 +33,13 @@ gtrans(FIFA_Nether,mode="graph")
 gtrans(FIFA_Nether,mode="digraph")
 
 # degree centrality
-
 FIFA_Nether %v% 'vertex.names' #it gives me the names of nodes
 degree(FIFA_Nether) # gmode is set to "digraph" by default.
 
 # closeness centrality
-
 FIFA_Nether %v% 'vertex.names' #it gives me the names of nodes
 closeness(FIFA_Nether) # gmode is set to "digraph" by default.
 
 # betweenness centrality
-
 FIFA_Nether %v% 'vertex.names' #it gives me the names of nodes
 betweenness(FIFA_Nether) # gmode is set to "digraph" by default.
