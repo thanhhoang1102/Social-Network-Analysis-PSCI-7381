@@ -20,7 +20,7 @@ summary(FIFA_Nether,print.adj=TRUE)
 # density
 gden(FIFA_Nether)
 # density calculated by hand in a directed network
-den_hand <- (108/11*(11-1))/100
+den_hand <- 108/(11*10)
 den_hand
 
 # number of components (subgroup in which all actors are conected, directely or indirectely)
