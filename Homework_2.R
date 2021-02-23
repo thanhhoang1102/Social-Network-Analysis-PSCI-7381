@@ -18,7 +18,7 @@ colnames(sociomatrix) <- c("1","2","3","4","5","6")
 
 sociomatrix
 
-# edgelist creation
+# edgelist format creation
 edgelist <- rbind(c(1,2),
                   c(2,3),
                   c(3,1),
@@ -50,6 +50,21 @@ net2 <- network(edgelist,matrix.type="edgelist")
 network.vertex.names(net2) <- c("1","2","3","4","5","6")
 class(net2)
 summary(net2)
+
+# plot the network  to verify if this coincide with the example provided
+gplot(net2, vertex.col = 2, displaylabels = TRUE)
+
+# Converting the edgelist into a network object using IGRAPH
+detach (package:statnet)
+library(igraph)
+
+inet2 <- graph.edgelist(edgelist)
+class(inet2)
+summary(inet2)
+
+# degree of nodes
+net1 %v% 'vertex.names' #it gives me the names of nodes
+degree(inet2) # gmode is set to "digraph" by default.
 
 # plot the network  to verify if this coincide with the example provided
 gplot(net2, vertex.col = 2, displaylabels = TRUE)
