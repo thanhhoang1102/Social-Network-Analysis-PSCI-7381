@@ -1,4 +1,3 @@
-# Homework 2
 # PSCI 7381
 # Prof. Dr. Santoro
 # Student: Federico Ferrero
