@@ -101,3 +101,22 @@ as.sociomatrix(netval1) #indicates that nodes are related or not
 as.sociomatrix(netval1,"like") #indicates the value of the tie according to "like"
 
 # creating a network object in igraph
+detach (package:statnet)#because it has some same names as those found in igraph, so, to avoid confusion
+library(igraph)
+
+# creating network with adjacency using igraph
+inet1 <- graph.adjacency(netmat1)
+class(inet1)
+summary(inet1)
+str(inet1)
+
+# creating network with edgelist using igraph
+inet2 <- graph.edgelist(netmat2)
+summary(inet2)
+
+# set attributes to nodes and ties using igraph
+
+V(inet2)$name <- c("A","B","C","D","E")
+E(inet2)$val <- c(1:6)
+summary(inet2)
+str(inet2)
