@@ -26,7 +26,7 @@ edgelist <- rbind(c(1,2),
                   c(6,1))
 edgelist
 
-# Converting the sociomatrix into a network object using STANET
+# Converting the sociomatrix into a network object using STATNET
 library(statnet)
 net1 <- network(sociomatrix,matrix.type="adjacency")
 class(net1)
@@ -43,7 +43,7 @@ inet1 <- graph.adjacency(sociomatrix)
 class(inet1)
 summary(inet1)
 
-# Converting the edgelist into a network object using STANET
+# Converting the edgelist into a network object using STATNET
 library(statnet)
 
 net2 <- network(edgelist,matrix.type="edgelist")
@@ -62,18 +62,43 @@ inet2 <- graph.edgelist(edgelist)
 class(inet2)
 summary(inet2)
 
+# summary
+summary(net1)
+
+# identifying isolates
+length(isolates(net1))
+
 # degree of nodes
-net1 %v% 'vertex.names' #it gives me the names of nodes
-degree(inet2) # gmode is set to "digraph" by default.
+degree(inet1) # gmode is set to "digraph" by default
 
-# plot the network  to verify if this coincide with the example provided
-gplot(net2, vertex.col = 2, displaylabels = TRUE)
+#
+#
+#
+#
+#
+#
+#
+#
 
-# Converting the edgelist into a network object using IGRAPH
+# Importing edgelist data into R
 detach (package:statnet)
 library(igraph)
 
-# IGRAPH: creating network using edgelist
-inet2 <- graph.edgelist(edgelist)
-class(inet2)
-summary(inet2)
+edges<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-Analysis-PSCI-7381/main/Edgelist-Media-Edges.csv", header=T, as.is=T)
+nodes<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-Analysis-PSCI-7381/main/Edgelist-Media-Nodes.csv", header=T, as.is=T)
+
+network <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
+network
+summary(network)
+
+plot(net, edge.arrow.size=.4,vertex.label=V(network)$media)
+
+
+# transform network from igraph to network (statnet)
+library(intergraph)
+class(network)
+
+networkasnet <- asNetwork(network) 
+class(networkasnet)
+summary(networkasnet)
+
