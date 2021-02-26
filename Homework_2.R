@@ -101,13 +101,17 @@ network <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
 network
 summary(network)
 
-plot(net, edge.arrow.size=.4,vertex.label=V(network)$media)
-
-
-# transform network from igraph to network (statnet)
+# transform network from igraph to network (statnet) and obtain the summary
 library(intergraph)
 class(network)
 
 networkasnet <- asNetwork(network) 
 class(networkasnet)
 summary(networkasnet)
+
+# degree of nodes
+V(network)$media
+degree(network) # gmode is set to "digraph" by default
+
+# plot
+plot(network, edge.arrow.size=.4,vertex.label=V(network)$media)
