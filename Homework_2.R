@@ -62,7 +62,7 @@ inet2 <- graph.edgelist(edgelist)
 class(inet2)
 summary(inet2)
 
-# summary
+# summary of the net
 summary(net1)
 
 # identifying isolates
@@ -71,14 +71,24 @@ length(isolates(net1))
 # degree of nodes
 degree(inet1) # gmode is set to "digraph" by default
 
-#
-#
-#
-#
-#
-#
-#
-#
+# create a vertex (node) attribute: nationality (either American or Mexican)  
+library(statnet)
+set.vertex.attribute (net1, "nationality", c("Mexican", "Mexican", "American", 
+                                             "American", "Mexican", "Mexican"))
+
+# see the attributes assigned
+list.vertex.attributes(net1)
+get.vertex.attribute(net1, "nationality")
+summary(net1)
+
+# create an edge (tie) attribute: number of sent emails
+list.edge.attributes(net1)
+set.edge.attribute(net1,"emails", c("1", "2", "5", 
+                                    "7", "3"))
+# see the attributes assigned
+list.edge.attributes(net1)
+summary(get.edge.attribute(net1,"emails"))
+as.sociomatrix(net1, "emails")
 
 # Importing edgelist data into R
 detach (package:statnet)
@@ -101,4 +111,3 @@ class(network)
 networkasnet <- asNetwork(network) 
 class(networkasnet)
 summary(networkasnet)
-
