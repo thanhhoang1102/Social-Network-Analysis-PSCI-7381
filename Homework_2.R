@@ -113,5 +113,8 @@ summary(networkasnet)
 V(network)$media
 degree(network) # gmode is set to "digraph" by default
 
+# betweenness centrality
+betweenness(network) # gmode is set to "digraph" by default.
+
 # plot
 plot(network, edge.arrow.size=.4,vertex.label=V(network)$media)
