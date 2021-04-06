@@ -100,8 +100,9 @@ E(network2)$width <- E(network2)$weight/7
 plot(network2, layout=layout_with_graphopt, edge.arrow.size=.15, vertex.label=V(network2)$media, 
      vertex.label.font=35, vertex.label.color="black",
      vertex.label.cex=.7, edge.color="gray27")
-# Changing the color of the edges depending on the typeof tie
-E(network2)$color <- ifelse(E(network2)$type=="mention",'blue','hotpink')
+
+# Changing the color of the edges depending on the type of tie
+E(network2)$color <- ifelse(E(network2)$type=="hyperlink",'blue','hotpink')
 plot(network2, layout=layout_with_graphopt, edge.arrow.size=.2, vertex.label=V(network2)$media, 
      vertex.label.font=35, vertex.label.color="black",
      vertex.label.cex=.7, color.edge=E(network2)$color)
