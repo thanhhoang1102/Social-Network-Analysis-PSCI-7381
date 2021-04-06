@@ -2,7 +2,7 @@
 # Federico Ferrero
 # 4/6/2021
 
-# clear your memory
+# clear my memory
 rm(list=ls())
 
 # Importing edgelist data into R
