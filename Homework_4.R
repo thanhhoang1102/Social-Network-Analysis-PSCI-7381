@@ -143,7 +143,7 @@ plot(network2, layout=layout_with_graphopt, edge.arrow.size=.2, vertex.label=V(n
      vertex.label.cex=.8, color.edge=E(network2)$color, main="Making an Optimal Visualization")
 
 # Adding the legenda
-legend(x=-1.9, y=-0.9, c("Newspaper","Television", "Online News"), pch=c(22,21,24),
+legend(x=-1.9, y=-0.9, c("Newspaper","Television", "Online News"), pch=21,
        col=col, pt.bg=col,text.font= 8, pt.cex=2, cex=.8, bty="n", ncol=1)
 
 legend(x=0.4, y=-0.999999, legend=c("Hyperlink", "Mention"),
