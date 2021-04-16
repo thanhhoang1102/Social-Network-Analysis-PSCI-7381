@@ -71,3 +71,20 @@ DSmod2c <- ergm(TCdiss ~ edges +
 summary(DSmod2c)
 
 # Including relational terms as predictors
+DSmod3 <- ergm(TCdiss ~ edges +
+                 nodecov('tob_yrs') +
+                 nodematch('agency_lvl',diff=TRUE) +
+                 edgecov(TCdist,attr='distance') +
+                 edgecov(TCcnt,attr='contact'),
+               control=control.ergm(seed=40))
+summary(DSmod3)
+
+# Including local structural predictors (dyad dependency) : GWESP
+DSmod4 <- ergm(TCdiss ~ edges +
+                 nodecov('tob_yrs') +
+                 nodematch('agency_lvl',diff=TRUE) +
+                 edgecov(TCdist,attr='distance') +
+                 edgecov(TCcnt,attr="contact") +
+                 gwesp(0.7, fixed=TRUE),
+               control=control.ergm(seed=40))
+summary(DSmod4)
