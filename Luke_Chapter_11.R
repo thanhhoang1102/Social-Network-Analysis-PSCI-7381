@@ -52,4 +52,22 @@ DSmod1 <- ergm(TCdiss ~ edges +
 summary(DSmod1)
 
 # Including dyadic predictors
+DSmod2a <- ergm(TCdiss ~ edges +
+                  nodecov('tob_yrs') +
+                  nodematch('agency_lvl'),
+                control=control.ergm(seed=40))
+summary(DSmod2a)
 
+DSmod2b <- ergm(TCdiss ~ edges +
+                  nodecov('tob_yrs') +
+                  nodematch('agency_lvl',diff=TRUE),
+                control=control.ergm(seed=40))
+summary(DSmod2b)
+
+DSmod2c <- ergm(TCdiss ~ edges +
+                  nodecov('tob_yrs') +
+                  nodemix('agency_lvl',base=1),
+                control=control.ergm(seed=40))
+summary(DSmod2c)
+
+# Including relational terms as predictors
