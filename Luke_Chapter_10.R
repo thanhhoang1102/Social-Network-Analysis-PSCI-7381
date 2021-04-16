@@ -1,6 +1,6 @@
 # SNA 
 # Federico Ferrero
-# Luke: Chapter 10: RANDOM NETWORK MODELS
+# Luke: Chapter 10 and 11
 
 library(igraph)
 g <- erdos.renyi.game(n=12,10,type='gnm')
