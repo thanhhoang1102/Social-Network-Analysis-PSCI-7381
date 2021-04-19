@@ -6,6 +6,7 @@ library(ggplot2)
 library(UserNetR)
 library(igraph)
 library(statnet)
+library(ergm)
 data(TCnetworks)
 TCcnt <- TCnetworks$TCcnt
 TCcoll <- TCnetworks$TCcoll
@@ -88,3 +89,42 @@ DSmod4 <- ergm(TCdiss ~ edges +
                  gwesp(0.7, fixed=TRUE),
                control=control.ergm(seed=40))
 summary(DSmod4)
+
+
+# predicting values
+prd_prob1 <- plogis(-6.31 + 2*1*.099 + 1.52 +
+                            4*1.042 + .858*(.50^4))
+prd_prob1
+prd_prob2 <- plogis(-6.31 + 2*5*.099 +
+                            1*1.042 + .858*(.50^4))
+prd_prob2
+
+# fit of model
+DSmod.fit <- gof(DSmod4,
+                 GOF = ~distance + espartners +
+                         degree + triadcensus,
+                 burnin=1e+5, interval = 1e+5)
+summary(DSmod.fit)
+
+op <- par(mfrow=c(2,2))
+plot(DSmod.fit,cex.axis=1.6,cex.label=1.6)
+par(op)
+
+mcmc.diagnostics(DSmod4)
+
+#simulating networks based on fit model
+sim4 <- simulate(DSmod4, nsim=1, seed=569)
+summary(sim4,print.adj=FALSE)
+
+op <- par(mfrow=c(1,2),mar=c(0,0,2,0))
+lvlobs <- TCdiss %v% 'agency_lvl'
+plot(TCdiss,usearrows=FALSE,
+     vertex.col=lvl+1,
+     edge.lwd=0.5,edge.col="grey75",
+     main="Observed TC network")
+lvl4 <- sim4 %v% 'agency_lvl'
+plot(sim4,usearrows=FALSE,
+     vertex.col=lvl4+1,
+     edge.lwd=0.5,edge.col="grey75",
+     main="Simulated network - Model 4")
+par(op)
