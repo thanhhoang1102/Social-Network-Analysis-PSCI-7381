@@ -31,14 +31,13 @@ flomarriage
 # load a network object of the Florentine data 
 data(florentine)
 ?florentine
+flomarriage
 
 #degree distribution
 degree(flomarriage)
 
 deg_dis <- as.data.frame(table(degree(flomarriage)))
 colnames(deg_dis) <- c('Degree','Frequency')
-plot(deg_dis, main="Degree Distribution Florentine Network")
-
 plot(deg_dis, main="Degree Distribution Florentine Network")
 
 # calculate eigenvector centrality of each node
@@ -53,6 +52,8 @@ plot(flomarriage, label= network.vertex.names(flomarriage), vertex.cex=wealth/15
 network.vertex.names(flomarriage)
 wealth
 
+dev.off()
+
 # set ERGM: a null model
 library(ergm)
 null <- ergm(flomarriage~edges,
@@ -61,6 +62,7 @@ class(null)
 summary(null)
 
 # the null model is constrained by the number of edges in the observed network
+# The probability of an edge being drawn should in theory be the same as density - let’s check.
 plogis(coef(null))
 gden(flomarriage)
 
@@ -70,12 +72,14 @@ mod1 <- ergm(flomarriage~edges+nodecov('wealth'),
 summary(mod1)
 
 # calculate betweenness centrality of each node
-?betweenness
 network.vertex.names(flomarriage) # it gives me the names of nodes
-betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates that edges should be
-#interpreted as directed; "graph" indicates that edges are undirected
+betw<-betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates that edges should be
+betw
+# and add it to the network object as a covariate
+betw <- flomarriage %v% "betw" <- betw
+flomarriage
 
 # add betweenness centrality as a dyad attribute to the model
-mod2 <- ergm(flomarriage~edges+nodecov('wealth'),
+mod2 <- ergm(flomarriage~edges+nodecov('wealth')+nodematch('betw'),
              control=control.ergm(seed=40))
 summary(mod2)
