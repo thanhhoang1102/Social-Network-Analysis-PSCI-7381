@@ -49,15 +49,12 @@ evcent(flomarriage)
 plot(flomarriage, label= network.vertex.names(flomarriage), vertex.cex=wealth/15,
      main= "Florentine Network by Wealth")
 
-network.vertex.names(flomarriage)
-wealth
 
 dev.off()
 
 # set ERGM: a null model
 library(ergm)
-null <- ergm(flomarriage~edges,
-               control=control.ergm(seed=40))
+null <- ergm(flomarriage~edges)
 class(null)
 summary(null)
 
@@ -67,19 +64,44 @@ plogis(coef(null))
 gden(flomarriage)
 
 # add node attribute: wealth
-mod1 <- ergm(flomarriage~edges+nodecov('wealth'),
-             control=control.ergm(seed=40))
+mod1 <- ergm(flomarriage~edges+nodecov('wealth'))
 summary(mod1)
 
 # calculate betweenness centrality of each node
 network.vertex.names(flomarriage) # it gives me the names of nodes
-betw<-betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates that edges should be
-betw
-# and add it to the network object as a covariate
-betw <- flomarriage %v% "betw" <- betw
-flomarriage
+betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates edges are directed
 
-# add betweenness centrality as a dyad attribute to the model
-mod2 <- ergm(flomarriage~edges+nodecov('wealth')+nodematch('betw'),
-             control=control.ergm(seed=40))
+# create three classes according to betweenness centrality
+# and add it to the network object as a covariate
+betw_class <- flomarriage %v% "betw_class" <-c(1,3,2,2,2,1,3,1,3,1,1,1,2,2,2,2) 
+# 1= low betwenness (0-4), 2=medium betwenness (5-19), 3= high betweeness (19 and more)
+
+flomarriage # verify if betw_class is now an vertex attribute
+betw_class
+
+# add betweenness centrality class as a dyad attribute to the model
+mod2 <- ergm(flomarriage~edges+nodecov('wealth')+nodematch('betw_class', diff=TRUE))
+
 summary(mod2)
+
+# add two measures of local structure to the model
+mod3 <- ergm(flomarriage~edges+nodecov('wealth')+
+               nodematch('betw_class', diff=TRUE)+gwesp(0.5, fixed=TRUE)+ triangle)
+
+summary(mod3)
+
+# Analyzing the model fit
+gof <- gof(mod3)
+# execute goodness of fit function and creates a new object, gof
+
+# produces some gof plots from the object
+par(mfrow=c(2,2))
+plot(gof)
+
+# see gof meassures
+gof
+
+# small p-values indicate problems
+# b/c they indicate that there is a statistically significant difference
+# between observed value of the statistic and the simulated values
+# whereas good fit would have it that these values should be similar.
