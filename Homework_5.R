@@ -33,9 +33,11 @@ data(florentine)
 ?florentine
 flomarriage
 
-#degree distribution
+#degree of nodes
+network.vertex.names(flomarriage) # it gives me the names of nodes
 degree(flomarriage)
 
+#degree distribution graphically
 deg_dis <- as.data.frame(table(degree(flomarriage)))
 colnames(deg_dis) <- c('Degree','Frequency')
 plot(deg_dis, main="Degree Distribution Florentine Network")
@@ -49,10 +51,9 @@ evcent(flomarriage)
 plot(flomarriage, label= network.vertex.names(flomarriage), vertex.cex=wealth/15,
      main= "Florentine Network by Wealth")
 
-
 dev.off()
 
-# set ERGM: a null model
+# ERGM: a null model
 library(ergm)
 null <- ergm(flomarriage~edges)
 class(null)
@@ -67,28 +68,34 @@ gden(flomarriage)
 mod1 <- ergm(flomarriage~edges+nodecov('wealth'))
 summary(mod1)
 
+# calculate probability of observing tie between families of different incomes
+p_edg <- coef(mod1) [1]
+p_edg
+p_wealth <- coef(mod1) [2]
+p_wealth
+plogis(p_edg + 146*p_wealth + 3*p_wealth) #prob of link between 2 diff families in term of wealth
+
+plogis(p_edg + 146*p_wealth + 103*p_wealth) #prob of link between 2 similar families in term of wealth
+
+
 # calculate betweenness centrality of each node
 network.vertex.names(flomarriage) # it gives me the names of nodes
-betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates edges are directed
-
-# create three classes according to betweenness centrality
-# and add it to the network object as a covariate
-betw_class <- flomarriage %v% "betw_class" <-c(1,3,2,2,2,1,3,1,3,1,1,1,2,2,2,2) 
-# 1= low betwenness (0-4), 2=medium betwenness (5-19), 3= high betweeness (19 and more)
-
-flomarriage # verify if betw_class is now an vertex attribute
-betw_class
+betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates edges 
+#are directed
 
 # add betweenness centrality class as a dyad attribute to the model
-mod2 <- ergm(flomarriage~edges+nodecov('wealth')+nodematch('betw_class', diff=TRUE))
+betw <- flomarriage %v% "betw" <-betweenness(flomarriage, gmode="graph")
+flomarriage # verify if it was added
 
+mod2 <- ergm(flomarriage ~ edges+nodecov('wealth')+absdiff("betw"))
 summary(mod2)
 
 # add two measures of local structure to the model
-mod3 <- ergm(flomarriage~edges+nodecov('wealth')+
-               nodematch('betw_class', diff=TRUE)+gwesp(0.5, fixed=TRUE)+ triangle)
-
+mod3 <- ergm(flomarriage~edges+nodecov('wealth')++absdiff("betw")+gwesp(0.5, fixed=TRUE)+ triangle)
 summary(mod3)
+
+library('stargazer')
+stargazer(mod3, title = "Testing ERGM model", out="table1.txt")
 
 # Analyzing the model fit
 gof <- gof(mod3)
