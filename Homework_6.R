@@ -4,6 +4,8 @@
 # clear your memory
 rm(list=ls())
 
+# set your working directory path
+setwd("C:/Users/feder/Desktop")
 
 # importing data into R
 library(statnet)
@@ -19,7 +21,6 @@ nodes<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-A
 networkasigraph <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
 networkasigraph
 class(networkasigraph)# verify the class of object: it's an object
-
 
 # from igraph to statnet and ask for summary
 library(intergraph)
@@ -88,100 +89,40 @@ legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organ
 legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
        col=c("blue","hotpink"), lty=1, cex=0.9, box.lty=0, text.font= 8)
 
-# ERGM model
+################# ERGM model #########################
 library(ergm)
+model1 <- ergm(networkasnet ~ edges+ transitiveties,
+             control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                  MCMLE.maxit=10),verbose=TRUE)
 
-# load Florentine marriage data matrix 
-data(flo)
-flo
+model2 <- ergm(networkasnet ~ edges+ mutual,
+               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                    MCMLE.maxit=10),verbose=TRUE)
 
-# create a network object out of the adjacency matrix 
-flomarriage <- network(flo, directed=FALSE)
-flomarriage[,] 
-class(flomarriage)
+model3 <- ergm(networkasnet~edges+nodecov('user_followers_count')+
+                     nodecov('user_followed_count')+
+                     nodecov('number_tweets')+
+                     nodematch('Profile'), control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                                                MCMLE.maxit=10),verbose=TRUE)
 
-# create a vector indicating the wealth of each family (in thousands of lira) 
-# and add it to the network object as a covariate
-in_degree <- networkasnet %v% "in_degree" <-c(10,36,27,146,55,44,20,8,42,103,48,49,10,48,32,3)
-wealth
-flomarriage
+finalmodel <- ergm(networkasnet ~ edges+ transitiveties+ mutual+ nodecov('user_followers_count')+
+                           nodecov('user_followed_count')+
+                           nodecov('number_tweets')+
+                           nodematch('Profile'),
+                   control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                        MCMLE.maxit=10),verbose=TRUE)
+                   
+summary(model1)
+summary(model2)
+summary(model3)
+summary(finalmodel)
 
-# load a network object of the Florentine data 
-data(florentine)
-?florentine
-flomarriage
-
-#degree of nodes
-network.vertex.names(flomarriage) # it gives me the names of nodes
-degree(flomarriage)
-
-#degree distribution graphically
-deg_dis <- as.data.frame(table(degree(flomarriage)))
-colnames(deg_dis) <- c('Degree','Frequency')
-plot(deg_dis, main="Degree Distribution Florentine Network")
-
-# calculate eigenvector centrality of each node
-?evcent
-network.vertex.names(flomarriage) # it gives me the names of nodes
-evcent(flomarriage)
-
-# create a visualization of the network where nodes are sized by wealth
-plot(flomarriage, label= network.vertex.names(flomarriage), vertex.cex=wealth/15,
-     main= "Florentine Network by Wealth")
-
-dev.off()
-
-######################### ERGM: a null model
-library(ergm)
-null <- ergm(networkasnet~edges)
-class(null)
-summary(null)
-
-# the null model is constrained by the number of edges in the observed network
-# The probability of an edge being drawn should in theory be the same as density - let's check.
-plogis(coef(null))
-gden(networkasnet)
-
-# add node attribute: wealth
-mod1 <- ergm(networkasnet~edges+nodecov('user_followers_count')+
-               nodecov('user_followed_count')+
-               nodecov('number_tweets')+
-               nodematch('Profile'))
-summary(mod1)
-
-
-# calculate probability of observing tie between families of different incomes
-p_edg <- coef(mod1) [1]
-p_edg
-p_wealth <- coef(mod1) [2]
-p_wealth
-plogis(p_edg + 146*p_wealth + 3*p_wealth) #prob of link between 2 diff families in term of wealth
-
-plogis(p_edg + 146*p_wealth + 103*p_wealth) #prob of link between 2 similar families in term of wealth
-
-
-# calculate betweenness centrality of each node
-network.vertex.names(flomarriage) # it gives me the names of nodes
-betweenness(flomarriage, gmode="graph") # gmode is set to "digraph" by default."digraph" indicates edges 
-#are directed
-
-# add betweenness centrality class as a dyad attribute to the model
-?degree
-in_degree <- networkasnet %v% "in_degree" <-degree(networkasnet)
-flomarriage # verify if it was added
-
-mod2 <- ergm(flomarriage ~ edges+nodecov('wealth')+absdiff("betw"))
-summary(mod2)
-
-# add two measures of local structure to the model
-mod3 <- ergm(flomarriage~edges+nodecov('wealth')++absdiff("betw")+gwesp(0.5, fixed=TRUE)+ triangle)
-summary(mod3)
 
 library('stargazer')
-stargazer(mod3, title = "Testing ERGM model", out="table1.txt")
+stargazer(finalmodel, title = "Testing ERGM model", out="table1.txt")
 
-# Analyzing the model fit
-gof <- gof(mod1)
+# analyzing the model fit
+gof <- gof(finalmodel)
 # execute goodness of fit function and creates a new object, gof
 
 # produces some gof plots from the object
