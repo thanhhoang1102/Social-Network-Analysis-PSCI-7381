@@ -4,10 +4,12 @@
 # clear your memory
 rm(list=ls())
 
-# importing edgelist data into R
+
+# importing data into R
 library(statnet)
 library(UserNetR)
 library(igraph)
+library(sna)
 
 
 edges<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-Analysis-PSCI-7381/main/final_edges_2.csv", header=T, as.is=T)
@@ -16,108 +18,77 @@ nodes<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-A
 
 networkasigraph <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
 networkasigraph
-class(networkasigraph)
+class(networkasigraph)# verify the class of object: it's an object
 
-summary(networkasigraph)
 
-# from igraph to statnet
+# from igraph to statnet and ask for summary
 library(intergraph)
-class(networkasigraph)
-
 networkasnet <- asNetwork(networkasigraph)
-
-class(networkasnet)
+class(networkasnet)# verify the class of object: it's a network object
 summary(networkasnet)
 
 # size of network
 network.size(networkasnet)
 
 # degree centrality
-network.vertex.names(networkasnet) # it gives me the names of nodes
-degree <-degree(networkasnet, gmode="digraph")
-mean(degree)
+mean(degree(networkasigraph, mode = "in")) # all, in, out
 
-# in degree centrality
-network.vertex.names(networkasnet) # it gives me the names of nodes
-in_degree <-degree(networkasnet, gmode="digraph", cmode="indegree")
+mean(degree(networkasigraph, mode = "out")) # all, in, out
 
-in_degree
-mean(in_degree)
-
-# out degree centrality
+summary(degree(networkasigraph, mode = "all")) # all, in, out
 mean(nodes$number_tweets)
 
 # betweenness
-betweenness <-betweenness(networkasnet, gmode="digraph")
-betweenness
+betweenness(networkasigraph)
+summary(betweenness(networkasigraph))
 
-#degree distribution graphically
-deg_dis <- as.data.frame(table(degree(networkasnet, gmode="digraph")))
-colnames(deg_dis) <- c('Degree','Frequency')
-plot(deg_dis, main="Degree Distribution #AlevelResults Network")
+#degree distribution
+degreedist(networkasnet, gmode="digraph")
 
-# plot
-plot(networkasigraph, layout= layout_with_graphopt, main="Main relations #AlevelResults discussion")
+# plotting the network
+# removing the loops
+networkasigraph <- simplify(networkasigraph, remove.multiple = F, remove.loops = T) 
+summary(networkasigraph)
 
 # defining labels according degrees
-node_label <-V(networkasigraph)$node_label <- unname(ifelse(degree(networkasigraph)[V(networkasigraph)] > 5, names(V(networkasigraph)), "")) 
+node_label <- V(networkasigraph)$node_label <- unname(ifelse(degree(networkasigraph)[V(networkasigraph)] > 7, 
+                                                             names(V(networkasigraph)), "")) 
 
-# defining color edges depending on type of link
+# defining color edges depending on type of link (reply = blue / retweet = hotpink)
 edge_color <-E(networkasigraph)$color <- ifelse(E(networkasigraph)$type_link=="reply",'blue','hotpink')
 
+# changing node size using centrality measures (in)
+in_degree <- degree(networkasigraph, mode="in") # all, in, out
+in_degree
+V(networkasigraph)$size <- in_degree*1.41
 
-# Changing node size using centrality measures
-degree <- degree(networkasigraph, mode="in") # all, in, out
-degree
-V(networkasigraph)$size <- degree*3
+# giving colors to nodes according main profiles
+V(networkasigraph)[V(networkasigraph)$Profile == "Politician"]$color <- "brown2"
+V(networkasigraph)[V(networkasigraph)$Profile == "Professor/Researcher"]$color <- "cadetblue"
+V(networkasigraph)[V(networkasigraph)$Profile == "Media organization"]$color <- "goldenrod2"
+V(networkasigraph)[V(networkasigraph)$Profile == "Union Leader"]$color <- "lightpink"
+V(networkasigraph)[V(networkasigraph)$Profile == "Other"]$color <- "yellowgreen"
+
+# plot
 plot(networkasigraph, layout=layout_nicely,
-     edge.arrow.size=.2, 
+     edge.arrow.size=.19,
+     vertex.label.color="black",
      vertex.label = node_label,
      vertex.label = node_label,
      color.edge= edge_color,
-     main="Main relations #AlevelResults discussion")
+     main="First retweets, replies, and mentions in #AlevelResults discussion")
 
+# adding legendas
+legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organization", 
+                               "Union Leader", "Other Citizen"), pch=21,
+       col= c("brown2","cadetblue","goldenrod2","lightpink","yellowgreen"), 
+       pt.bg= c("brown2","cadetblue","goldenrod2","lightpink","yellowgreen"),text.font= 8, 
+       pt.cex=2, cex=.9, bty="n", ncol=1)
 
-# Changing the color of the edges depending on the type of tie
-E(networkasigraph)$color <- ifelse(E(networkasigraph)$type=="reply",'blue','hotpink')
-plot(network2, layout=layout_with_graphopt, edge.arrow.size=.2, vertex.label=V(network2)$media, 
-     vertex.label.font=35, vertex.label.color="black",
-     vertex.label.cex=.8, color.edge=E(network2)$color, main="Making an Optimal Visualization")
-?layout
-?plot
-gden(networkasnet)
+legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
+       col=c("blue","hotpink"), lty=1, cex=0.9, box.lty=0, text.font= 8)
 
-?gden
-# indegree
-?degree
-degree(network)
-closeness(networkasigraph)
-betweenness(network)
-
-
-degree(network, mode = "in")
-
-in_deg <- network %v% "in_deg" <- degree(network, mode = "in")
-flomarriage # verify if it was added
-# transform network from igraph to network (statnet) and obtain the summary
-library(intergraph)
-class(network)
-
-networkasnet <- asNetwork(network) 
-class(networkasnet)
-summary(networkasnet)
-
-# degree of nodes
-V(network)$media
-degree(network) # gmode is set to "digraph" by default
-
-# betweenness centrality
-betweenness(network) # gmode is set to "digraph" by default.
-
-# plot
-plot(network, edge.arrow.size=.4,vertex.label=V(network)$media)
-
-# ergm
+# ERGM model
 library(ergm)
 
 # load Florentine marriage data matrix 
