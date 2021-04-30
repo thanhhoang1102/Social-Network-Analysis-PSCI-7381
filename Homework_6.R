@@ -169,6 +169,19 @@ summary(degree(networkasigraph, mode = "all")) # all, in, out
 betweenness(networkasigraph)
 summary(betweenness(networkasigraph))
 
+# add betweenness centrality class as a dyad attribute to the model
+betw <- networkasnet %v% "betw" <-betweenness(networkasigraph)
+networkasnet # verify if it was added
+
+network_filtered <- get.inducedSubgraph(networkasnet,
+                           which(betw > 26.89))#the betweenness media
+
+library(ggplot2)
+gplot(network_filtered,displaylabels=false)
+
+# filtering by betweenness
+network_filtered <- networkasnet %s% which(betw > 26.89)# the media
+
 #degree distribution
 degreedist(networkasnet, gmode="digraph")
 
@@ -183,7 +196,7 @@ node_label <- V(networkasigraph)$node_label <- unname(ifelse(betweenness(network
 # changing node size using betweenness
 betw <- betweenness(networkasigraph)
 betw
-V(networkasigraph)$size <- betw
+V(networkasigraph)$size <- betw/20
 
 # plot
 plot(networkasigraph, layout=layout_nicely,
@@ -195,9 +208,7 @@ plot(networkasigraph, layout=layout_nicely,
 
 
 library(ergm)
-model1 <- ergm(networkasnet ~ edges+ transitiveties,
-               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                    MCMLE.maxit=10),verbose=TRUE)
+model1 <- ergm(networkasnet ~ edges+ transitiveties)
 
 model2 <- ergm(networkasnet ~ edges+ mutual,
                control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
