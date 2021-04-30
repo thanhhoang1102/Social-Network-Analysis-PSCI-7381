@@ -136,3 +136,69 @@ gof
 # b/c they indicate that there is a statistically significant difference
 # between observed value of the statistic and the simulated values
 # whereas good fit would have it that these values should be similar.
+
+
+##################### working with bigger network
+
+
+edges<- read.csv("C:/Users/feder/Desktop/edges_retweet.csv", header=T, as.is=T)
+nodes<- read.csv("C:/Users/feder/Desktop/nodes_retweets.csv", header=T, as.is=T)
+
+
+networkasigraph <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
+networkasigraph
+class(networkasigraph)# verify the class of object: it's an object
+
+# from igraph to statnet and ask for summary
+library(intergraph)
+networkasnet <- asNetwork(networkasigraph)
+class(networkasnet)# verify the class of object: it's a network object
+summary(networkasnet)
+
+# size of network
+network.size(networkasnet)
+
+# degree centrality
+mean(degree(networkasigraph, mode = "in")) # all, in, out
+
+mean(degree(networkasigraph, mode = "out")) # all, in, out
+
+summary(degree(networkasigraph, mode = "all")) # all, in, out
+
+# betweenness
+betweenness(networkasigraph)
+summary(betweenness(networkasigraph))
+
+#degree distribution
+degreedist(networkasnet, gmode="digraph")
+
+# plotting the network
+# removing the loops
+networkasigraph <- simplify(networkasigraph, remove.multiple = F, remove.loops = T) 
+summary(networkasigraph)
+
+# defining labels according betweenness
+node_label <- V(networkasigraph)$node_label <- unname(ifelse(betweenness(networkasigraph)[V(networkasigraph)] > 27, 
+                                                             names(V(networkasigraph)), "")) 
+# changing node size using betweenness
+betw <- betweenness(networkasigraph)
+betw
+V(networkasigraph)$size <- betw
+
+# plot
+plot(networkasigraph, layout=layout_nicely,
+     edge.arrow.size=.19,
+     vertex.label.color="black",
+     vertex.label = node_label,
+     vertex.label = node_label,
+     main="First retweets, replies, and mentions in #AlevelResults discussion")
+
+
+library(ergm)
+model1 <- ergm(networkasnet ~ edges+ transitiveties,
+               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                    MCMLE.maxit=10),verbose=TRUE)
+
+model2 <- ergm(networkasnet ~ edges+ mutual,
+               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                    MCMLE.maxit=10),verbose=TRUE)
