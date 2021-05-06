@@ -189,6 +189,17 @@ b-a
 
 # The probability of forming a within-profile edge is 0.0038 higher than forming an across-profile edge
 
+# mybluekite and her probabilities to connect with active and non-active users
+p_edg <-coef(finalmodel) [1]
+p_num_tweets<-coef(finalmodel) [4]
+# mybluekite and her probabilities to connect with active users like ChristineJameis (posted 8 tweets)
+
+plogis(p_edg + 1*p_num_tweets + 8*p_num_tweets)
+# mybluekite and her probabilities to connect with non-active users like Nafiisaa (posted only 1 tweet)
+
+plogis(p_edg + 1*p_num_tweets + 1*p_num_tweets)
+
+
 # print in a table finalmodel outputs
 library('stargazer')
 stargazer(finalmodel, title = "Testing ERGM model", out="table_ergm_final.txt")
