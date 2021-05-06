@@ -130,7 +130,6 @@ V(networkasigraph2)[V(networkasigraph2)$Profile == "Other"]$color <- "yellowgree
 V(networkasigraph2)[V(networkasigraph2)$Profile == "Writer"]$color <- "yellow"
 V(networkasigraph2)[V(networkasigraph2)$Profile == "Activist"]$color <- "magenta"
 
-
 # plot
 plot(networkasigraph2, layout=layout_nicely,
      edge.arrow.size=.10,
@@ -150,118 +149,79 @@ legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
 
 dev.off()
 
-################# ERGM model #########################
+# ERGM model
 library(ergm)
 set.seed(510) # set a random seed so we can produce exactly the same results
 
-model4 <- ergm(networkasnet~edges+transitiveties+nodecov('user_followers_count')+
+finalmodel <- ergm(networkasnet~edges+nodecov('user_followers_count')+
                        nodecov('user_followed_count')+
                        nodecov('number_tweets')+
                        nodematch('Profile'), control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
                                                                   MCMLE.maxit=10),verbose=TRUE)
-summary(model4)
-library('stargazer')
-stargazer(model4, title = "Testing ERGM model", out="table_ergm_final.txt")
+summary(finalmodel)
+# interpretation on "Number of tweets" coefficient
+exp(0.2004)
+# 1.221891
+# As we can see, number of tweets published is a positive significant predictor of linkage in #AlevelResults network.
+# Holding all other effects constant, considering specifically the number of tweets 
+# posted by each user, the relative likelihood of observing a link in the network is 1.22.
 
-# analyzing the model fit
-gof <- gof(model4)
-# execute goodness of fit function and creates a new object, gof
-
-# produces some gof plots from the object
-par(mfrow=c(2,2))
-plot(gof)
-
-# see gof meassures
-gof
-
-
-model1 <- ergm(networkasnet ~ edges+ transitiveties,
-             control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                  MCMLE.maxit=10),verbose=TRUE)
-summary(model1)
-# interpretation model 1
-exp(2.6147278) 
-# 13.66
-# Holding all other effects constant, the relative likelihood of observing 
-# clustering in the network is 13.66.
-
-model2 <- ergm(networkasnet ~ edges+ mutual,
-               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                    MCMLE.maxit=10),verbose=TRUE)
-
-summary(model2)
-
-model3 <- ergm(networkasnet~edges+nodematch('Profile'), 
-               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                    MCMLE.maxit=10),verbose=TRUE)
-
-summary(model3)
+# interpretation of "Profile" coefficient
 # edges captures the number of edges in the model 
 # a homophily term that captures the effect of two actors in the network 
 # having the same Twitter account profile
 # nodematch("Profile")= counts the number of cases in which any two nodes sharing an edge 
 # have that same qualitative attribute (in this case the profile)
 
-# log odds of an edge in the twitter network: 
-# -6.059 X change in edge count + -0.814 x change in count of same profile edges
-
-# log odds of a tie across profiles in the Twitter discussion is -6.059 (edges coefficient)
+# log odds of a tie across profiles in the Twitter discussion is -6.204 (edges coefficient)
 # Take the inverse logistic transformation
-# logit^{-1}(-6.059) = I/(1 + exp(6.059)) = 0.0023 = probability of a tie across profiles
+# logit^{-1}(-6.204) = I/(1 + exp(6.204)) = 0.0020 = probability of a tie across profiles
 library(gtools)
-a <- inv.logit(-6.059)
+a <- inv.logit(-6.204)
 a
 # what about odds in the same profile?
-# compute the log odds of such a tie = -6.059 - (-0.814) = -5.245
+# compute the log odds of such a tie = -6.204 - (-1.078) = -5.126
 # take the same inverse logistic transformation
-# exp(-5.245)/(1 + exp(-5.245)) = 0.0052 = probability of a tie within profiles
-b<- inv.logit(-5.245)
+# exp(-5.126)/(1 + exp(-5.126)) = 0.0059 = probability of a tie within profiles
+b<- inv.logit(-5.126)
 b
 b-a
 
-# The probability of forming a within-profile edge is 0.0029 higher than forming an across-profile edge
+# The probability of forming a within-profile edge is 0.0038 higher than forming an across-profile edge
 
-finalmodel <- ergm(networkasnet ~ edges+ transitiveties+nodematch('Profile'),
-                   control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                        MCMLE.maxit=10),verbose=TRUE)
-summary(finalmodel)
-# interpretation transitiveties coefficient
-exp(2.2338214) 
-#interpretation nodematch('Profile') coefficient
-# log odds of a tie across profiles in the Twitter discussion is -6.7033195 (edges coefficient)
-# Take the inverse logistic transformation
-library(gtools)
-c <- inv.logit(-6.7033195)# probability of a tie across profiles
-c
-# what about odds in the same profile?
-# compute the log odds of such a tie = -6.7033195 - (-1.1981176) = -5.505
-# take the same inverse logistic transformation
-d<- inv.logit(-5.245)# = probability of a tie within profiles
-d
-d-c
-
-
+# print in a table finalmodel outputs
+library('stargazer')
+stargazer(finalmodel, title = "Testing ERGM model", out="table_ergm_final.txt")
 
 # analyzing the model fit
 gof <- gof(finalmodel)
-# execute goodness of fit function and creates a new object, gof
 
+# execute goodness of fit function and creates a new object, gof
 # produces some gof plots from the object
 par(mfrow=c(2,2))
 plot(gof)
 
 # see gof meassures
 gof
-
 # small p-values indicate problems
 # b/c they indicate that there is a statistically significant difference
 # between observed value of the statistic and the simulated values
 # whereas good fit would have it that these values should be similar.
 
-# other ergm
-
-
-##################### working with bigger network
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+##################### working with bigger network##############3
 
 # clear your memory
 rm(list=ls())
@@ -374,7 +334,6 @@ V(networkasigraph)[V(networkasigraph)$Profile == "Union Leader"]$color <- "light
 V(networkasigraph)[V(networkasigraph)$Profile == "Other"]$color <- "yellowgreen"
 
 
-
 color.edge= edge_color,
 # adding legendas
 legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organization", 
@@ -385,7 +344,6 @@ legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organ
 
 legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
        col=c("blue","hotpink"), lty=1, cex=0.9, box.lty=0, text.font= 8)
-
 
 
 #degree distribution
@@ -411,11 +369,3 @@ plot(network_filtered, layout=layout_nicely,
      vertex.label = node_label,
      vertex.label = node_label,
      main="TITLE")
-
-
-library(ergm)
-model1 <- ergm(networkasnet ~ edges+ transitiveties)
-
-model2 <- ergm(networkasnet ~ edges+ mutual,
-               control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
-                                    MCMLE.maxit=10),verbose=TRUE)
