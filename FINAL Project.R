@@ -1,4 +1,5 @@
 # FINAL PROJECT
+# Federico Ferrero
 # Social Network Analysis
 
 # clear your memory
@@ -45,10 +46,12 @@ betweenness(networkasigraph)
 summary(betweenness(networkasigraph))
 table(betweenness(networkasigraph))
 
-# eigenvector
-eigen(networkasigraph)
-summary(betweenness(networkasigraph))
-table(betweenness(networkasigraph)))
+# statistics for other variables
+summary(nodes$user_followed_count)
+summary(nodes$user_followers_count)
+summary(nodes$number_tweets)
+summary(nodes$Profile)
+
 #degree distribution
 degreedist(networkasnet, gmode="digraph")
 
@@ -95,7 +98,7 @@ legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organ
 legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
        col=c("blue","hotpink"), lty=1, cex=0.9, box.lty=0, text.font= 8)
 
-# ploting egonet of the participant with higher betweeness centrality
+# ploting "egonet" of the participant with higher betweeness centrality
 
 edges_ego<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-Analysis-PSCI-7381/main/edges_ego_net.csv", header=T, as.is=T)
 nodes_ego<- read.csv("https://raw.githubusercontent.com/federico-jf/Social-Network-Analysis-PSCI-7381/main/nodes_ego_net.csv", header=T, as.is=T)
@@ -153,6 +156,12 @@ dev.off()
 library(ergm)
 set.seed(510) # set a random seed so we can produce exactly the same results
 
+# null model
+nullmodel <- ergm(networkasnet~edges, control=control.ergm(MCMC.samplesize=500,MCMC.burnin=1000,
+                                                           MCMLE.maxit=10),verbose=TRUE)
+summary(nullmodel)
+# final model
+
 finalmodel <- ergm(networkasnet~edges+nodecov('user_followers_count')+
                        nodecov('user_followed_count')+
                        nodecov('number_tweets')+
@@ -194,15 +203,18 @@ p_edg <-coef(finalmodel) [1]
 p_num_tweets<-coef(finalmodel) [4]
 # mybluekite and her probabilities to connect with active users like ChristineJameis (posted 8 tweets)
 
-plogis(p_edg + 1*p_num_tweets + 8*p_num_tweets)
+r<- plogis(p_edg + 1*p_num_tweets + 8*p_num_tweets)
 # mybluekite and her probabilities to connect with non-active users like Nafiisaa (posted only 1 tweet)
 
-plogis(p_edg + 1*p_num_tweets + 1*p_num_tweets)
-
+t<- plogis(p_edg + 1*p_num_tweets + 1*p_num_tweets)
+r-t
 
 # print in a table finalmodel outputs
 library('stargazer')
 stargazer(finalmodel, title = "Testing ERGM model", out="table_ergm_final.txt")
+
+# extract number of observations of finalmodel
+nobs(finalmodel)
 
 # analyzing the model fit
 gof <- gof(finalmodel)
@@ -219,164 +231,3 @@ gof
 # between observed value of the statistic and the simulated values
 # whereas good fit would have it that these values should be similar.
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-##################### working with bigger network##############3
-
-# clear your memory
-rm(list=ls())
-
-# set your working directory path
-setwd("C:/Users/feder/Desktop")
-
-# importing data into R
-library(statnet)
-library(UserNetR)
-library(igraph)
-library(sna)
-
-edges<- read.csv("C:/Users/feder/Desktop/edges_retweet.csv", header=T, as.is=T)
-nodes<- read.csv("C:/Users/feder/Desktop/nodes_retweets.csv", header=T, as.is=T)
-
-
-networkasigraph <- graph_from_data_frame(d=edges, vertices=nodes, directed = TRUE)
-networkasigraph
-class(networkasigraph)# verify the class of object: it's an object
-
-# removing the loops
-networkasigraph <- simplify(networkasigraph, remove.multiple = F, remove.loops = T) 
-summary(networkasigraph)
-
-# from igraph to statnet and ask for summary
-library(intergraph)
-networkasnet <- asNetwork(networkasigraph)
-class(networkasnet)# verify the class of object: it's a network object
-summary(networkasnet)
-
-# size of network
-network.size(networkasnet)
-
-# betweenness total network
-betweenness(networkasigraph)
-summary(betweenness(networkasigraph))
-
-# add betweenness centrality 
-betw <- networkasnet %v% "betw" <-betweenness(networkasigraph)
-networkasnet # verify if it was added
-betw
-
-# filtering network
-network_filtered <- get.inducedSubgraph(networkasnet,
-                                        which(betw > 185000))#the betweenness media
-
-
-class(network_filtered)
-
-#plotting network
-library(ggplot)
-gplot(network_filtered, displaylabels=TRUE)
-
-
-# defining labels according degrees
-node_label <- V(network_filtered)$node_label <- unname(ifelse(betw > 150000, 
-                                                              names(V(network_filtered)), "")) 
-
-
-
-
-
-
-library(ggplot2)
-
-
-# changing node size using betweenness
-betw
-V(network_filtered)$size <- betw/1
-
-nodesize<- V(network_filtered)$size <- betw
-
-# filtering by betweenness
-network_filtered <- networkasnet %s% which(betw > 26.89)# the media
-
-
-
-# defining labels according degrees
-node_label <- V(networkasigraph)$node_label <- unname(ifelse(betweenness(networkasigraph)[V(networkasigraph)] > 150000, 
-                                                             names(V(networkasigraph)), "")) 
-
-# defining color edges depending on type of link (reply = blue / retweet = hotpink)
-edge_color <-E(networkasigraph)$color <- ifelse(E(networkasigraph)$type_link=="reply",'blue','hotpink')
-
-# changing node size using centrality measures (in)
-
-V(network_filtered)$size <- betw
-class(network_filtered)
-# plot
-plot(network_filtered,
-     edge.arrow.size=.19,
-     vertex.label.color="black",
-     vertex.label = node_label,
-     main="Title")
-
-
-
-
-
-
-
-
-
-# giving colors to nodes according main profiles
-V(networkasigraph)[V(networkasigraph)$Profile == "Politician"]$color <- "brown2"
-V(networkasigraph)[V(networkasigraph)$Profile == "Professor/Researcher"]$color <- "cadetblue"
-V(networkasigraph)[V(networkasigraph)$Profile == "Media organization"]$color <- "goldenrod2"
-V(networkasigraph)[V(networkasigraph)$Profile == "Union Leader"]$color <- "lightpink"
-V(networkasigraph)[V(networkasigraph)$Profile == "Other"]$color <- "yellowgreen"
-
-
-color.edge= edge_color,
-# adding legendas
-legend(x=-1.3, y=-1.1,legend=c("Politician","Professor/Researcher", "Media Organization", 
-                               "Union Leader", "Other Citizen"), pch=21,
-       col= c("brown2","cadetblue","goldenrod2","lightpink","yellowgreen"), 
-       pt.bg= c("brown2","cadetblue","goldenrod2","lightpink","yellowgreen"),text.font= 8, 
-       pt.cex=2, cex=.9, bty="n", ncol=1)
-
-legend(x=0.4, y=-1.2, legend=c("Reply/Mentions", "Retweet"),
-       col=c("blue","hotpink"), lty=1, cex=0.9, box.lty=0, text.font= 8)
-
-
-#degree distribution
-degreedist(networkasnet, gmode="digraph")
-
-# plotting the network
-# removing the loops
-networkasigraph <- simplify(networkasigraph, remove.multiple = F, remove.loops = T) 
-summary(networkasigraph)
-
-# defining labels according betweenness
-node_label <- V(networkasigraph)$node_label <- unname(ifelse(betweenness(networkasigraph)[V(networkasigraph)] > 27, 
-                                                             names(V(networkasigraph)), "")) 
-# changing node size using betweenness
-betw <- betweenness(networkasigraph)
-betw
-V(networkasigraph)$size <- betw/20
-
-# plot
-plot(network_filtered, layout=layout_nicely,
-     edge.arrow.size=.19,
-     vertex.label.color="black",
-     vertex.label = node_label,
-     vertex.label = node_label,
-     main="TITLE")
