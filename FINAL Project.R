@@ -1,6 +1,7 @@
-# FINAL PROJECT
+# PSCI 7381: Social Networks, Spring 2021 
+# Prof. Lauren Santoro
+# FINAL PAPER
 # Federico Ferrero
-# Social Network Analysis
 
 # clear your memory
 rm(list=ls())
