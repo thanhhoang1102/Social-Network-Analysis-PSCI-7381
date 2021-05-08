@@ -33,6 +33,9 @@ summary(networkasnet)
 # size of network
 network.size(networkasnet)
 
+# number of components
+components(networkasigraph)
+
 # degree centrality
 summary(degree(networkasigraph, mode = "in")) 
 
@@ -114,6 +117,9 @@ library(intergraph)
 networkasnet2 <- asNetwork(networkasigraph2)
 class(networkasnet2)# verify the class of object: it's a network object
 summary(networkasnet2)
+
+# number of components
+components(networkasigraph2)
 
 # plotting the egonet of the participant with higest betweeness centrality
 # defining color edges depending on type of link (reply = blue / retweet = hotpink)
@@ -231,4 +237,3 @@ gof
 # b/c they indicate that there is a statistically significant difference
 # between observed value of the statistic and the simulated values
 # whereas good fit would have it that these values should be similar.
-
